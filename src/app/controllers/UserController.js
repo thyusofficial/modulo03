@@ -22,21 +22,13 @@ class UserController {
     if (userExists) {
       return res.status(400).json({ error: 'User already exists' });
     }
-    await User.create(req.body);
-    const { id, name, avatar } = await User.findByPk(req.userId, {
-      include: [
-        {
-          model: File,
-          as: 'avatar',
-          attributes: ['id', 'path', 'url'],
-        },
-      ],
-    });
+    const { id, name, email, provider } = await User.create(req.body);
+
     return res.json({
       id,
       name,
       email,
-      avatar,
+      provider,
     });
   }
 
@@ -74,13 +66,23 @@ class UserController {
       return res.status(401).json({ error: 'Password does not match' });
     }
 
-    const { id, name, provider } = await user.update(req.body);
+    await user.update(req.body);
+
+    const { id, name, avatar } = await User.findByPk(req.userId, {
+      include: [
+        {
+          model: File,
+          as: 'avatar',
+          attributes: ['is', 'path', 'url'],
+        },
+      ],
+    });
 
     return res.json({
       id,
       name,
       email,
-      provider,
+      avatar,
     });
   }
 }
